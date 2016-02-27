@@ -11,8 +11,7 @@
 #include<vector>
 #include <cmath>
 #include "pugixml-1.7/src/pugixml.hpp"
-#include <inttypes.h>
-#define __STDC_FORMAT_MACROS
+#include <omp.h>
 using namespace std;
 
 //Debug
@@ -24,9 +23,10 @@ using namespace std;
 #define Debug( x  ) 
 #endif
 
-#define MAX_FILE_SIZE 50000
+#define MAX_FILE_SIZE 80000
 #define EI_LENGTH  40
 #define DEFAULT_RMAX  15
+#define MIN_CHUNK_SIZE  3
 #define AI_HOLE_LENGTH  5
 #define AI_GAP_THRESHOLD  0.4f
 #define DEFAULT_LAB  100

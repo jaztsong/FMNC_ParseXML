@@ -116,11 +116,17 @@ void unaggre_chunk::find_jumbo()
 
 void unaggre_chunk::calc_rates()
 {
+        if(j_start + 1 > j_end){
+                cerr<<"ERROR:illegal unaggregated chunk with size "<<j_end -j_start<<endl;
+                return ;
+        }
+
         double sum_time=0;
         uint32_t sum_size=0;
         vector<fmnc_measurer_point*>* tmp = mSentSet->getData();
         /* cout<<"Start to calculating rates "<<j_start<<" "<<j_end<<endl; */
         Debug("Start to calculating rates "<<j_start<<" "<<j_end);
+
         
         //Send
         sum_time =1e6*( ( *tmp )[j_end+1]->get_time()-( *tmp )[j_start]->get_time() );
@@ -353,9 +359,10 @@ uint64_t fmnc_parser::getConnectionTime()
 }
 void fmnc_parser::calcRTT()
 {
+        Debug("Start to calculate RTT");
         vector<fmnc_measurer_point*>* sent = mSentSet->getData();
         vector<fmnc_measurer_point*>* rcvd = mRcvdSet->getData();
-        for(uint32_t i=0;i<( *sent ).size()-1 && i<( *rcvd ).size()-1 ;++i){
+        for(uint32_t i=0;i+1<( *sent ).size() && i+1<( *rcvd ).size() ;i++){
                 /* cout<<"Sent Time "<<( *sent )[i]->get_time()<<" Rcvd Time "<<( *rcvd )[i]->get_time( )<<endl; */
                 mRTT.push_back(1e3*( ( *rcvd )[i]->get_time()- ( *sent )[i]->get_time( )));//Change to milisecond
         }
@@ -364,7 +371,7 @@ void fmnc_parser::calcRTT()
 void fmnc_parser::calcInterACK()
 {
         vector<fmnc_measurer_point*>* rcvd = mRcvdSet->getData();
-        for(uint32_t i=0;i<( *rcvd ).size()-2 ;++i){
+        for(uint32_t i=0;i+2<( *rcvd ).size() ;++i){
                 mInterACK.push_back(1e3*( ( *rcvd )[i+1]->get_time()- ( *rcvd )[i]->get_time( )));//Change to milisecond
         }
         Debug("Calculated the InterACK with size "<<mInterACK.size());
@@ -375,7 +382,7 @@ float fmnc_parser::calcAggregation()
 {
         if(mInterACK.size()>0){
                 int ag=0,sum=0;
-                for(uint32_t i=0;( i<mInterACK.size()-1 ) && ( i < mLab-1 );i++){
+                for(uint32_t i=0;( i+1<mInterACK.size() ) && ( i+1 < mLab );i++){
                         if(mInterACK[i]<float( AI_GAP_THRESHOLD ))
                                 ag++;
                         sum++;
@@ -393,7 +400,7 @@ void fmnc_parser::getLocalAggregation()
       
         if(mInterACK.size()>0){
                 for(uint32_t i=0;mInterACK.size()>i + DEFAULT_LOCAL_WINDOW+1
-                                &&i < mLab-DEFAULT_LOCAL_WINDOW-1;i++){
+                                &&i +DEFAULT_LOCAL_WINDOW+1< mLab;i++){
                         int ag=0;
                         for(uint32_t j=0;j<DEFAULT_LOCAL_WINDOW;j++){
                                 if(mInterACK[i+j]<float( AI_GAP_THRESHOLD ))
@@ -421,7 +428,7 @@ void fmnc_parser::find_unaggre_chunks()
                         //Find unaggregated part
                         /* cout<<"Unaggre: "<<i<<" "<<mlocalAggre[i]<<" "<<i-pre_unaggre<<endl; */
                         
-                        if(i-pre_unaggre>AI_HOLE_LENGTH){
+                        if(i>AI_HOLE_LENGTH + pre_unaggre){
                                 //If the unaggregation discontinued, then push what
                                 //we have into the chunks
                                 /* cout<<"Break"<<start<<" "<<length<<endl; */
@@ -433,7 +440,7 @@ void fmnc_parser::find_unaggre_chunks()
                                         length -= CHUNK_SIZE;
                                         m_unaggre_chunks.push_back(uc);
                                 }
-                                if(length > 3){
+                                if(length > MIN_CHUNK_SIZE){
                                         uc = new unaggre_chunk(start);
                                         uc->set_length(length);
                                         m_unaggre_chunks.push_back(uc);
@@ -450,7 +457,7 @@ void fmnc_parser::find_unaggre_chunks()
                         }
                         pre_unaggre = i;
                 }
-                if(i == mlocalAggre.size()-1 && length > 3){
+                if(i+1 == mlocalAggre.size() && length > MIN_CHUNK_SIZE){
                         /* cout<<"Final Break"<<start<<" "<<length<<endl; */
                         while(length > CHUNK_SIZE){
                                 uc = new unaggre_chunk(start);
@@ -527,7 +534,7 @@ void fmnc_parser::detect_upbottleneck()
         std::vector<double> v_tsp,v_rcvd;
         /* cout<<"Start to Populate "<<t_len<<endl; */
         
-        for(uint32_t i=0;i<t_len-1 ;i++){
+        for(uint32_t i=0;i+1<t_len ;i++){
                 v_tsp.push_back(((*rcvd_list)[i+1]->getTsVal() - (*rcvd_list)[i]->getTsVal())/
                                 float((*rcvd_list)[t_len-1]->getTsVal() - (*rcvd_list)[0]->getTsVal()));
                 /* cout<<" Push timestamp "<<i<<" "<<((*rcvd_list)[i+1]->getTsVal() - (*rcvd_list)[i]->getTsVal()) */

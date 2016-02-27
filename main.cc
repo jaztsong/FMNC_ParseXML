@@ -1,5 +1,5 @@
 #include<stdio.h>
-#include <sys/stat.h>
+#include<sys/stat.h>
 #include<cstdlib>
 #include<iostream>
 #include<string.h>
@@ -23,9 +23,13 @@ int main(int argc, char* argv[]){
         else{
                 flist=listFile(argv[1]);
         }
-        for(vector<string>::iterator it=flist.begin();it != flist.end();++it){
-                fmnc_parser parser(*it);
-                parser.dump_str();
+#pragma omp parallel for
+        {
+                for(vector<string>::iterator it=flist.begin();it != flist.end();++it){
+                        fmnc_parser parser(*it);
+                        parser.dump_str();
+                }
+
         }
 
         return 0;
@@ -37,7 +41,7 @@ int getFileSize(const char* fileName)
         struct stat statbuf;
 
         if (stat(fileName, &statbuf) == -1) {
-                  /* check the value of errno */
+                /* check the value of errno */
                 cerr<<"*Error: Wrong file "<<fileName<<endl;
                 return MAX_FILE_SIZE + 1;
         }
