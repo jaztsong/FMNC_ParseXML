@@ -1,10 +1,11 @@
 #include<stdio.h>
 #include<sys/stat.h>
-#include<cstdlib>
+#include <stdlib.h>
 #include<iostream>
 #include<string.h>
 #include<dirent.h>
 #include<vector>
+#include <omp.h>
 #include "fmnc_parser.h"
 
 using namespace std;
@@ -24,10 +25,11 @@ int main(int argc, char* argv[]){
                 flist=listFile(argv[1]);
         }
         omp_set_num_threads(4);
-#pragma omp parallel for
+#pragma omp parallel
         {
-                for(vector<string>::iterator it=flist.begin();it != flist.end();++it){
-                        fmnc_parser parser(*it);
+#pragma omp for
+                for(uint32_t i=0;i<flist.size();i++){
+                        fmnc_parser parser(flist[i]);
                         parser.dump_str();
                 }
         }

@@ -12,7 +12,7 @@ $(MAIN): $(OBJS)
 	        $(CC) $(CFLAGS) $(INCLUDES) -o $(MAIN) $(OBJS) $(LFLAGS) $(LIBS)
 
 main.o: main.cc fmnc_parser.h
-	    $(CC) $(CFLAGS)  -c main.cc
+	    $(CC) $(CFLAGS) -fopenmp  -c main.cc
 
 fmnc_parser.o: fmnc_parser.cc fmnc_parser.h
 	    $(CC) $(CFLAGS) -c fmnc_parser.cc

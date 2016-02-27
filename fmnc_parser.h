@@ -11,7 +11,6 @@
 #include<vector>
 #include <cmath>
 #include "pugixml-1.7/src/pugixml.hpp"
-#include <omp.h>
 using namespace std;
 
 //Debug
