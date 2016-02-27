@@ -222,17 +222,14 @@ void fmnc_parser::dump_str()
         result += "\tbssid=%s";
         result += "\trssi=%s";
         result += "\tthroughput=%u\n";
-        //dump << "\tthroughput=%llu\n";
 
 
-        cout<<"TRY THROUGHPUT "<<mRequestHelper.throughput<<endl;
         printf(result.c_str(),get_filename().c_str(),getConnectionTime(),average(mRTT),
                         calc_packetloss(),calcAggregation(),getAB(),getCor(),getEI(),
                         mRequestHelper.app.c_str(),mRequestHelper.id.c_str(),
                         mRequestHelper.type.c_str(),mRequestHelper.ssid.c_str(),
                         mRequestHelper.bssid.c_str(),mRequestHelper.rssi.c_str(),
                         mRequestHelper.throughput);
-        printf("\tthroughput=%u\n",mRequestHelper.throughput);
 
 }
 string fmnc_parser::get_filename()
