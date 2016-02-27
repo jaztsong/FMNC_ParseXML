@@ -205,30 +205,33 @@ fmnc_parser::fmnc_parser(string fn)
 }
 void fmnc_parser::dump_str()
 {
-        stringstream dump;
         
-        dump << "\tfilename=%s";
-        dump << "\ttime=%d";
-        dump << "\trtt=%.2f";
-        dump << "\tpdr=%.2f";
-        dump << "\taggre=%.2f";
-        dump << "\tcor=%.2f";
-        dump << "\tei=%.2f";
-        dump << "\tapp=%s";
-        dump << "\tid=%s";
-        dump << "\ttype=%s";
-        dump << "\tssid=%s";
-        dump << "\tbssid=%s";
-        dump << "\trssi=%.2f";
+        string result("");
+        result += "\tfilename=%s";
+        result += "\ttime=%d";
+        result += "\trtt=%.2f";
+        result += "\tpdr=%.2f";
+        result += "\taggre=%.2f";
+        result += "\tab=%.2f";
+        result += "\tcor=%.2f";
+        result += "\tei=%.2f";
+        result += "\tapp=%s";
+        result += "\tid=%s";
+        result += "\ttype=%s";
+        result += "\tssid=%s";
+        result += "\tbssid=%s";
+        result += "\trssi=%s";
+        result += "\tthroughput=%u\n";
         //dump << "\tthroughput=%llu\n";
 
 
         cout<<"TRY THROUGHPUT "<<mRequestHelper.throughput<<endl;
-        printf(dump.str().c_str(),get_filename().c_str(),getConnectionTime(),average(mRTT),
-                        calc_packetloss(),getAB(),getCor(),getEI(),
+        printf(result.c_str(),get_filename().c_str(),getConnectionTime(),average(mRTT),
+                        calc_packetloss(),calcAggregation(),getAB(),getCor(),getEI(),
                         mRequestHelper.app.c_str(),mRequestHelper.id.c_str(),
                         mRequestHelper.type.c_str(),mRequestHelper.ssid.c_str(),
-                        mRequestHelper.bssid.c_str(),mRequestHelper.rssi.c_str());
+                        mRequestHelper.bssid.c_str(),mRequestHelper.rssi.c_str(),
+                        mRequestHelper.throughput);
         printf("\tthroughput=%u\n",mRequestHelper.throughput);
 
 }
