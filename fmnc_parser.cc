@@ -58,32 +58,43 @@ void unaggre_chunk::set_j_start(uint32_t st)
 }
 void unaggre_chunk::find_jumbo()
 {
+        Debug("Find jumbo");
         //Find Start
         uint32_t st=start_index,end = start_index+length-1;
+        //default
+        set_j_start(st);
 
         for(uint32_t offset=0;offset<(*mInterACK).size();offset++){
+                Debug("looking start "<<st<<" "<<offset<<" "<<(*mInterACK).size());
                 if(st < (*mInterACK).size() && st < mLab){
+                        Debug(" + offset"<<st + offset);
                         if( st + offset <(*mInterACK).size() &&
                                          st + offset < mLab &&
                                         (*mInterACK)[st+offset] > AI_GAP_THRESHOLD ){
                                 set_j_start(st + offset);
                                 break;
                         }
-                        if( st - offset > 0 &&
+                        Debug(" - offset "<<st - offset);
+                        if(  st > offset &&
                                         (*mInterACK)[st-offset] > AI_GAP_THRESHOLD ){
                                 set_j_start ( st - offset);
                                 break;
                         }
                 }
         }
-        /* cout<<"Find Start "<<st<<" "<<j_start<<endl; */
+        Debug("Find Start "<<st<<" "<<j_start);
         //Find End
         /* for(int i = 0;i<(*mInterACK).size();i++) */
         /*         cout<<" InterACK "<<i<<" "<<(*mInterACK)[i]<<endl; */
+        Debug("The End start from "<<end);
         end = min((uint32_t)(*mInterACK).size()-2,end);
+        //default
+        set_j_end(end);
+        Debug(" to "<<end);
         for(uint32_t offset=0;offset<(*mInterACK).size() - 1;offset++){
-                /* cout<<" Looking end "<<end<<" "<<offset<<" "<<(*mInterACK)[end+offset]<<endl; */
+                Debug("looking end "<<end<<" "<<offset<<" "<<(*mInterACK).size());
                 if(end < (*mInterACK).size() - 1 && end < mLab ){
+                        Debug(" + offset"<<end + offset);
                         if( end + offset <(*mInterACK).size() - 1 &&
                                         end + offset < mLab &&
                                         end + offset > j_start &&
@@ -91,14 +102,15 @@ void unaggre_chunk::find_jumbo()
                                 set_j_end(end + offset-1);
                                 break;
                         }
-                        if( end - offset > j_start &&
+                        Debug(" - offset "<<end - offset);
+                        if( end  > j_start + offset &&
                                         (*mInterACK)[end-offset] > AI_GAP_THRESHOLD ){
                                 set_j_end ( end - offset-1);
                                 break;
                         }
                 }
         }
-        /* cout<<"Find End "<<end<<" "<<j_end<<endl; */
+        Debug("Find End "<<end<<" "<<j_end);
 
 }
 
@@ -108,7 +120,7 @@ void unaggre_chunk::calc_rates()
         uint32_t sum_size=0;
         vector<fmnc_measurer_point*>* tmp = mSentSet->getData();
         /* cout<<"Start to calculating rates "<<j_start<<" "<<j_end<<endl; */
-        
+        Debug("Start to calculating rates "<<j_start<<" "<<j_end);
         
         //Send
         sum_time =1e6*( ( *tmp )[j_end+1]->get_time()-( *tmp )[j_start]->get_time() );
@@ -125,6 +137,7 @@ void unaggre_chunk::calc_rates()
         rcvd_rate = sum_size/sum_time;
         /* cout<<" sum time "<<sum_time<<" sum size "<<sum_size<<endl; */
         
+        Debug(" rates: "<<start_index<<" rcvd: "<<rcvd_rate<<" send: "<<sent_rate);
         /* cout<<" rates: "<<start_index<<" rcvd: "<<rcvd_rate<<" send: "<<sent_rate<<endl; */
         
 }
@@ -193,23 +206,30 @@ fmnc_parser::fmnc_parser(string fn)
 void fmnc_parser::dump_str()
 {
         stringstream dump;
-        dump << " filename= "+ get_filename();
-        dump << " Time= "<<  getConnectionTime( );
-        dump << " RTT= "<<  average(mRTT);
-        dump << " PDR= "<<  calc_packetloss();
-        dump << " AI= "<<  calcAggregation();
-        dump << " AB= "<<  getAB();
-        dump << " Cor= "<<  getCor();
-        dump << " EI= "<<  getEI();
-        dump << " APP= "<<  mRequestHelper.app;
-        dump << " ID= "<<  mRequestHelper.id;
-        dump << " TYPE= "<<  mRequestHelper.type;
-        dump << " SSID= "<<  mRequestHelper.ssid;
-        dump << " BSSID= "<<  mRequestHelper.bssid;
-        dump << " RSSI= "<<  mRequestHelper.rssi;
-        dump << " Throughput= "<<  mRequestHelper.throughput;
+        
+        dump << "\tfilename=%s";
+        dump << "\ttime=%d";
+        dump << "\trtt=%.2f";
+        dump << "\tpdr=%.2f";
+        dump << "\taggre=%.2f";
+        dump << "\tcor=%.2f";
+        dump << "\tei=%.2f";
+        dump << "\tapp=%s";
+        dump << "\tid=%s";
+        dump << "\ttype=%s";
+        dump << "\tssid=%s";
+        dump << "\tbssid=%s";
+        dump << "\trssi=%.2f";
+        //dump << "\tthroughput=%llu\n";
 
-        cout<<dump.str()<<endl;
+
+        cout<<"TRY THROUGHPUT "<<mRequestHelper.throughput<<endl;
+        printf(dump.str().c_str(),get_filename().c_str(),getConnectionTime(),average(mRTT),
+                        calc_packetloss(),getAB(),getCor(),getEI(),
+                        mRequestHelper.app.c_str(),mRequestHelper.id.c_str(),
+                        mRequestHelper.type.c_str(),mRequestHelper.ssid.c_str(),
+                        mRequestHelper.bssid.c_str(),mRequestHelper.rssi.c_str());
+        printf("\tthroughput=%u\n",mRequestHelper.throughput);
 
 }
 string fmnc_parser::get_filename()
@@ -237,6 +257,7 @@ void fmnc_parser::load_file(string fn)
         pugi::xml_parse_result result = doc.load_file(fn.c_str());
 
         if(result >0){
+                Debug("Start to load file "<<fn.c_str());
                 string time= doc.child("ConnectionTCPSlice").attribute("CreationTime").value();
                 /* uint64_t tt = std::atoi(time.c_str()); */
                 setRequest(doc.child("ConnectionTCPSlice").attribute("Request").value());
@@ -295,6 +316,7 @@ void fmnc_parser::setDataSet(fmnc_measurer_set* ms)
 }
 void fmnc_parser::parse_request()
 {
+        Debug("Start to parse the request "<<mRequest);
         vector<string> strs;
         boost::split(strs,mRequest,boost::is_any_of("?"));
         for(vector<string>::iterator it=strs.begin();it != strs.end();++it){
@@ -303,13 +325,14 @@ void fmnc_parser::parse_request()
                 else if((*it).find("Rmax=") != std::string::npos)
                         mRmax = atoi((*it).substr(5).c_str());
                 else if((*it).find("app=") != std::string::npos)
-                        mRequestHelper.app = (*it).substr(5);
-                else if((*it).find("uuid=") != std::string::npos &&
+                        mRequestHelper.app = (*it).substr(4);
+                else if((*it).find("uuid=") != std::string::npos ||
                                 (*it).find("imei=") != std::string::npos)
                         mRequestHelper.id = (*it).substr(5);
                 else if((*it).find("type=") != std::string::npos)
                         mRequestHelper.type = (*it).substr(5);
-                else if((*it).find("SSID=") != std::string::npos)
+                else if((*it).find("SSID=") != std::string::npos &&
+                           (*it).find("SSID=") == (size_t) 0 )
                         mRequestHelper.ssid = (*it).substr(5);
                 else if((*it).find("BSSID=") != std::string::npos)
                         mRequestHelper.bssid = (*it).substr(6);
@@ -336,6 +359,7 @@ void fmnc_parser::calcRTT()
                 /* cout<<"Sent Time "<<( *sent )[i]->get_time()<<" Rcvd Time "<<( *rcvd )[i]->get_time( )<<endl; */
                 mRTT.push_back(1e3*( ( *rcvd )[i]->get_time()- ( *sent )[i]->get_time( )));//Change to milisecond
         }
+        Debug("Calculated the RTT with size "<<mRTT.size());
 }
 void fmnc_parser::calcInterACK()
 {
@@ -343,6 +367,7 @@ void fmnc_parser::calcInterACK()
         for(uint32_t i=0;i<( *rcvd ).size()-2 ;++i){
                 mInterACK.push_back(1e3*( ( *rcvd )[i+1]->get_time()- ( *rcvd )[i]->get_time( )));//Change to milisecond
         }
+        Debug("Calculated the InterACK with size "<<mInterACK.size());
 }
 
 
@@ -367,7 +392,8 @@ void fmnc_parser::getLocalAggregation()
 {
       
         if(mInterACK.size()>0){
-                for(uint32_t i=0;i<mInterACK.size()-DEFAULT_LOCAL_WINDOW-1&&i < mLab-DEFAULT_LOCAL_WINDOW-1;i++){
+                for(uint32_t i=0;mInterACK.size()>i + DEFAULT_LOCAL_WINDOW+1
+                                &&i < mLab-DEFAULT_LOCAL_WINDOW-1;i++){
                         int ag=0;
                         for(uint32_t j=0;j<DEFAULT_LOCAL_WINDOW;j++){
                                 if(mInterACK[i+j]<float( AI_GAP_THRESHOLD ))
@@ -381,6 +407,7 @@ void fmnc_parser::getLocalAggregation()
         else{
                 cerr<<"*Error: InterAck is empty"<<endl;
         }
+        Debug("Calculated local Aggregation list with size "<<mlocalAggre.size());
     
 }
 void fmnc_parser::find_unaggre_chunks()
@@ -444,11 +471,11 @@ void fmnc_parser::find_unaggre_chunks()
 }
 void fmnc_parser::rate_analysis()
 {
+        Debug("Anaysis the rate:");
         uint32_t accu_false = 0;
         uint32_t end = 0;
         for(vector<unaggre_chunk*>::iterator it=m_unaggre_chunks.begin();it !=m_unaggre_chunks.end();++it){
-                /* cout<<" Chunk "<<(*it)->get_start()<<" /w length=" */
-                /*         <<(*it)->get_length()<<endl; */
+                Debug(" Chunk "<<(*it)->get_start()<<" /w length=" <<(*it)->get_length()); 
                 (*it)->setLab(get_mLab());
                 (*it)->setDataSet(getDataSet("Receive"));
                 (*it)->setDataSet(getDataSet("Send"));
@@ -460,11 +487,12 @@ void fmnc_parser::rate_analysis()
                         if(accu_false > ACCU_FALSE_LMT){
                                 break;
                         }
-                        /* cout<<" Bad "<<accu_false<<endl; */
+                        Debug(" Bad "<<accu_false);
                 }else{
                         mAB = (*it)->get_rcvd_rate();
                         end = (*it)->get_start()+(*it)->get_length()-1;
                         /* cout<<" Good "<<endl; */
+                        Debug(" Good ");
                 }
         }
         if(mAB > MAX_RATE_TARGET){
@@ -478,13 +506,12 @@ void fmnc_parser::rate_analysis()
         uc.setDataSet(getDataSet("Receive"));
         uc.setDataSet(getDataSet("Send"));
         uc.setInterACK(&mInterACK);
-        /* cout<<"Final Evaluate Chunk "<<uc.get_start()<<" /w length=" */
-        /*         <<uc.get_length()<<endl; */
+        Debug("Final Evaluate Chunk "<<uc.get_start()<<" /w length=" <<uc.get_length());
         uc.set_j_start((uint32_t)(end));
         uc.set_j_end((uint32_t)(min(mLab,(uint32_t)mInterACK.size())));
         uc.calc_rates();
         if(uc.decide_tag(THETA1,THETA2,mRmax)){
-                /* cout<<" Good "<<endl; */
+                Debug(" Good ");
                 mAB = 12;
                 return;
         }
@@ -493,6 +520,7 @@ void fmnc_parser::rate_analysis()
 }
 void fmnc_parser::detect_upbottleneck()
 {
+        Debug("Detect Up:");
         std::vector<fmnc_measurer_point*>* rcvd_list = mRcvdSet->getData() ;
         //Find the common non zero segment 
         uint32_t t_len = min(mLab,(uint32_t)(*rcvd_list).size());

@@ -11,7 +11,20 @@
 #include<vector>
 #include <cmath>
 #include "pugixml-1.7/src/pugixml.hpp"
+#include <inttypes.h>
+#define __STDC_FORMAT_MACROS
 using namespace std;
+
+//Debug
+//#define DEBUG
+
+#ifdef DEBUG
+#define Debug( x  ) std::cout << x <<endl;
+#else
+#define Debug( x  ) 
+#endif
+
+#define MAX_FILE_SIZE 50000
 #define EI_LENGTH  40
 #define DEFAULT_RMAX  15
 #define AI_HOLE_LENGTH  5
@@ -104,7 +117,7 @@ class fmnc_parser
                         string ssid;
                         string bssid;
                         string rssi;
-                        uint64_t throughput;
+                        uint32_t throughput;
                 };
                 request_helper mRequestHelper;
                 string mRequest;
