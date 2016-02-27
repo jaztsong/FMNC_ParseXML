@@ -118,6 +118,9 @@ class fmnc_parser
                         string bssid;
                         string rssi;
                         uint32_t throughput;
+                        float latitude;
+                        float longitude;
+                        float accelerate;
                 };
                 request_helper mRequestHelper;
                 string mRequest;

@@ -213,29 +213,50 @@ void fmnc_parser::dump_str()
 {
         
         string result("");
-        result += "\tfilename=%s";
-        result += "\ttime=%d";
-        result += "\trtt=%.2f";
-        result += "\tpdr=%.2f";
-        result += "\taggre=%.2f";
-        result += "\tab=%.2f";
-        result += "\tcor=%.2f";
-        result += "\tei=%.2f";
-        result += "\tapp=%s";
-        result += "\tid=%s";
-        result += "\ttype=%s";
-        result += "\tssid=%s";
-        result += "\tbssid=%s";
-        result += "\trssi=%s";
-        result += "\tthroughput=%u\n";
+        //result += "filename=%s";
+        //result += "time=%d";
+        //result += "rtt=%.2f";
+        //result += "pdr=%.2f";
+        //result += "aggre=%.2f";
+        //result += "ab=%.2f";
+        //result += "cor=%.2f";
+        //result += "ei=%.2f";
+        //result += "app=%s";
+        //result += "id=%s";
+        //result += "type=%s";
+        //result += "ssid=%s";
+        //result += "bssid=%s";
+        //result += "rssi=%s";
+        //result += "throughput=%u";
+        //result += "latitude=%f.2f";
+        //result += "longitude=%f.2f";
+        //result += "accelerate=%f.2f\n";
 
+        result += "%s,";
+        result += "%d,";
+        result += "%.2f,";
+        result += "%.2f,";
+        result += "%.2f,";
+        result += "%.2f,";
+        result += "%.2f,";
+        result += "%.2f,";
+        result += "%s,";
+        result += "%s,";
+        result += "%s,";
+        result += "%s,";
+        result += "%s,";
+        result += "%s,";
+        result += "%u,";
+        result += "%.2f,";
+        result += "%.2f,";
+        result += "%.2f\n";
 
         printf(result.c_str(),get_filename().c_str(),getConnectionTime(),average(mRTT),
                         calc_packetloss(),calcAggregation(),getAB(),getCor(),getEI(),
                         mRequestHelper.app.c_str(),mRequestHelper.id.c_str(),
                         mRequestHelper.type.c_str(),mRequestHelper.ssid.c_str(),
                         mRequestHelper.bssid.c_str(),mRequestHelper.rssi.c_str(),
-                        mRequestHelper.throughput);
+                        mRequestHelper.throughput,mRequestHelper.latitude,mRequestHelper.longitude,mRequestHelper.accelerate);
 
 }
 string fmnc_parser::get_filename()
@@ -346,6 +367,12 @@ void fmnc_parser::parse_request()
                         mRequestHelper.rssi = (*it).substr(5);
                 else if((*it).find("Throughput=") != std::string::npos)
                         mRequestHelper.throughput= atoi((*it).substr(11).c_str());
+                else if((*it).find("Lat=") != std::string::npos)
+                        mRequestHelper.latitude = atof((*it).substr(4).c_str());
+                else if((*it).find("Long=") != std::string::npos)
+                        mRequestHelper.longitude = atof((*it).substr(5).c_str());
+                else if((*it).find("Acc=") != std::string::npos)
+                        mRequestHelper.accelerate = atof((*it).substr(4).c_str());
         }
 
 }

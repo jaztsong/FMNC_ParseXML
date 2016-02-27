@@ -23,14 +23,15 @@ int main(int argc, char* argv[]){
         else{
                 flist=listFile(argv[1]);
         }
+        omp_set_num_threads(4);
 #pragma omp parallel for
         {
                 for(vector<string>::iterator it=flist.begin();it != flist.end();++it){
                         fmnc_parser parser(*it);
                         parser.dump_str();
                 }
-
         }
+
 
         return 0;
 
