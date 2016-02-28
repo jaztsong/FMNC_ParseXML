@@ -139,7 +139,7 @@ class fmnc_parser
 
 
 
-                void parse_request();
+                bool parse_request();
                 void setRequest(string s){mRequest = s;};
                 void calcRTT();
                 double calc_packetloss();

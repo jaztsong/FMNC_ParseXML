@@ -267,14 +267,15 @@ string fmnc_parser::get_filename()
 void fmnc_parser::start_parse()
 {
         load_file(mfilename);
-        parse_request();
-        calcRTT();
-        calcInterACK();
-        getLocalAggregation();
-        find_unaggre_chunks();
-        rate_analysis();
-        detect_upbottleneck();
-        calc_EI();
+        if(parse_request()){
+                calcRTT();
+                calcInterACK();
+                getLocalAggregation();
+                find_unaggre_chunks();
+                rate_analysis();
+                detect_upbottleneck();
+                calc_EI();
+        }
 
 }
 void fmnc_parser::load_file(string fn)
@@ -341,9 +342,13 @@ void fmnc_parser::setDataSet(fmnc_measurer_set* ms)
                 mSentSet=ms;
         }
 }
-void fmnc_parser::parse_request()
+bool fmnc_parser::parse_request()
 {
         Debug("Start to parse the request "<<mRequest);
+        if(mRequest.find("/tests/train?0?SliceSize=") == std::string::npos){
+                cerr<<"*ERROR: wrong request: "<<mRequest<<endl;
+                return false;
+        }
         vector<string> strs;
         boost::split(strs,mRequest,boost::is_any_of("?"));
         for(vector<string>::iterator it=strs.begin();it != strs.end();++it){
@@ -374,6 +379,7 @@ void fmnc_parser::parse_request()
                 else if((*it).find("Acc=") != std::string::npos)
                         mRequestHelper.accelerate = atof((*it).substr(4).c_str());
         }
+        return true;
 
 }
 void fmnc_parser::setConnectionTime(uint64_t t)
