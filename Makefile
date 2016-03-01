@@ -17,6 +17,6 @@ main.o: main.cc fmnc_parser.h
 fmnc_parser.o: fmnc_parser.cc fmnc_parser.h
 	    $(CC) $(CFLAGS) -c fmnc_parser.cc
 pugixml.o: pugixml-1.7/src/pugixml.cpp pugixml-1.7/src/pugixml.hpp pugixml-1.7/src/pugiconfig.hpp
-	    $(CC) $(CFLAGS) -c fmnc_parser.cc
+	    $(CC) $(CFLAGS) -c pugixml-1.7/src/pugixml.cpp
 clean: 
 		$(RM) $(MAIN) *.o *~

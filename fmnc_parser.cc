@@ -570,20 +570,22 @@ void fmnc_parser::detect_upbottleneck()
         std::vector<double> v_tsp,v_rcvd;
         /* cout<<"Start to Populate "<<t_len<<endl; */
         
-        for(uint32_t i=0;i+1<t_len ;i++){
-                v_tsp.push_back(((*rcvd_list)[i+1]->getTsVal() - (*rcvd_list)[i]->getTsVal())/
-                                float((*rcvd_list)[t_len-1]->getTsVal() - (*rcvd_list)[0]->getTsVal()));
-                /* cout<<" Push timestamp "<<i<<" "<<((*rcvd_list)[i+1]->getTsVal() - (*rcvd_list)[i]->getTsVal()) */
-                /*         << " "<< float((*rcvd_list)[t_len-1]->getTsVal() - (*rcvd_list)[0]->getTsVal())<<endl; */
-                v_rcvd.push_back(((*rcvd_list)[i+1]->get_time() - (*rcvd_list)[i]->get_time())/
-                                float((*rcvd_list)[t_len-1]->get_time() - (*rcvd_list)[0]->get_time()));
-                /* cout<<" Push recevied "<<i<<" "<<((*rcvd_list)[i+1]->get_time() - (*rcvd_list)[i]->get_time()) */
-                /*         << " "<< float((*rcvd_list)[t_len-1]->get_time() - (*rcvd_list)[0]->get_time())<<endl; */
+        Debug("The base for SENTACK is "<<float((*rcvd_list)[t_len-1]->getTsVal() - (*rcvd_list)[0]->getTsVal()));
+        Debug("The base for RCVD is "<<float((*rcvd_list)[t_len-1]->get_time() - (*rcvd_list)[0]->get_time()));
+        for(uint32_t i=0;i+2<t_len ;i++){
+                v_tsp.push_back(((int32_t)( (*rcvd_list)[i+1]->getTsVal() ) - (int32_t)( (*rcvd_list)[i]->getTsVal() ))/
+                                float((int32_t)( (*rcvd_list)[t_len-1]->getTsVal() ) -(int32_t) ( (*rcvd_list)[0]->getTsVal( ))));
+                /* cout<<" Push timestamp "<<i<<" "<<((int32_t)( (*rcvd_list)[i+1]->getTsVal() ) - (int32_t)( (*rcvd_list)[i]->getTsVal() )) */
+                /*         << " "<< (int32_t)( (*rcvd_list)[i]->getTsVal() ) <<endl; */
+                v_rcvd.push_back(( (*rcvd_list)[i+1]->get_time()  - (*rcvd_list)[i]->get_time() )/
+                                float( (*rcvd_list)[t_len-1]->get_time()  -  (*rcvd_list)[0]->get_time() ));
+                /* cout<<" Push received "<<i<<" "<<( (*rcvd_list)[i+1]->get_time()  -  (*rcvd_list)[i]->get_time() ) */
+                /*         << " "<<  (*rcvd_list)[i]->get_time()  <<endl; */
         }
         /* cout<<"Finish populate the lists "<<v_tsp.size()<<" "<<v_rcvd.size()<<endl; */
         
         mCor = pearson_correlation(v_tsp, v_rcvd);
-        /* cout<<"Correlation "<<mCor<<endl; */
+        Debug("Correlation "<<mCor);
         
 }
 double fmnc_parser::calc_packetloss()
