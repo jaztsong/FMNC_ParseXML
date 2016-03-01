@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
         else{
                 flist=listFile(argv[1]);
         }
-        omp_set_num_threads(1);
+        omp_set_num_threads(8);
 #pragma omp parallel
         {
 #pragma omp for

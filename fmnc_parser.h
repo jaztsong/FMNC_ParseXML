@@ -22,7 +22,7 @@ using namespace std;
 #define Debug( x  ) 
 #endif
 
-#define MAX_FILE_SIZE 80000
+#define MAX_FILE_SIZE 200000
 #define EI_LENGTH  40
 #define DEFAULT_RMAX  15
 #define MIN_CHUNK_SIZE  3

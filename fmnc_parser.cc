@@ -206,6 +206,9 @@ fmnc_parser::fmnc_parser(string fn)
         mRmax = DEFAULT_RMAX;
         mAB = 0.0;
         mRequestHelper.throughput = 0;
+        mRequestHelper.latitude = 0;
+        mRequestHelper.longitude = 0;
+        mRequestHelper.accelerate = 0;
         start_parse();
 
 }
