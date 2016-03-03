@@ -209,8 +209,23 @@ fmnc_parser::fmnc_parser(string fn)
         mRequestHelper.latitude = 0;
         mRequestHelper.longitude = 0;
         mRequestHelper.accelerate = 0;
+        init_times();
+        
+
+
         start_parse();
 
+
+}
+void fmnc_parser::init_times()
+{
+
+        mTime_AB_end = 0;
+        mTime_AB_start = 0;
+        mTime_EI_end = 0;
+        mTime_EI_start = 0;
+        mTime_SYN_end = 0;
+        mTime_SYN_start = 0;
 }
 void fmnc_parser::dump_str()
 {
@@ -224,6 +239,9 @@ void fmnc_parser::dump_str()
         //result += "ab=%.2f";
         //result += "cor=%.2f";
         //result += "ei=%.2f";
+        //result += "ab_time=%.2f";
+        //result += "ei_time=%.2f";
+        //result += "3way_time=%.2f";
         //result += "app=%s";
         //result += "id=%s";
         //result += "type=%s";
@@ -243,6 +261,9 @@ void fmnc_parser::dump_str()
         result += "%.2f,";
         result += "%.2f,";
         result += "%.2f,";
+        result += "%.2f,";
+        result += "%.2f,";
+        result += "%.2f,";
         result += "%s,";
         result += "%s,";
         result += "%s,";
@@ -256,6 +277,7 @@ void fmnc_parser::dump_str()
 
         printf(result.c_str(),get_filename().c_str(),getConnectionTime(),average(mRTT),
                         calc_packetloss(),calcAggregation(),getAB(),getCor(),getEI(),
+                        getAB_duration(),getEI_duration(),get3way_duration(),
                         mRequestHelper.app.c_str(),mRequestHelper.id.c_str(),
                         mRequestHelper.type.c_str(),mRequestHelper.ssid.c_str(),
                         mRequestHelper.bssid.c_str(),mRequestHelper.rssi.c_str(),
@@ -266,7 +288,28 @@ string fmnc_parser::get_filename()
 {
         return mfilename;
 }
+double fmnc_parser::getAB_duration(){
+        if(mTime_AB_end>0 && mTime_AB_start >0)
+                //return millisecond
+                return 1e3*(mTime_AB_end - mTime_AB_start);
+        else
+                return 1/0.0;
+}
 
+double fmnc_parser::getEI_duration(){
+        if(mTime_EI_end>0 && mTime_EI_start >0)
+                //return millisecond
+                return 1e3*(mTime_EI_end - mTime_EI_start);
+        else
+                return 1/0.0;
+}
+double fmnc_parser::get3way_duration(){
+        if(mTime_SYN_end>0 && mTime_SYN_start >0)
+                //return millisecond
+                return 1e3*(mTime_SYN_end - mTime_SYN_start);
+        else
+                return 1/0.0;
+}
 void fmnc_parser::start_parse()
 {
         load_file(mfilename);
@@ -298,12 +341,22 @@ void fmnc_parser::load_file(string fn)
                 ms = new fmnc_measurer_set("Receive");
                 fmnc_measurer_point* mp;
                 for(pugi::xml_node_iterator it =st.begin();it != st.end();++it){
-                        if((strcmp( it->name(),"PktTCP") == 0 ) && ( strcmp(it->attribute("Meta").value(),"") != 0  )) {
+                        if((strcmp( it->name(),"PktTCP") == 0 ) && 
+                                        ( strcmp(it->attribute("Meta").value(),"") != 0  )) {
                                 mp =new fmnc_measurer_point(fixTime(it->attribute("Time").value()),
                                                 std::atoi(it->attribute("IPLength").value()),
                                                 std::atoi(it->attribute("TsVal").value()));
                                 ms->add_item(mp);
 
+                                if(( strcmp(it->attribute("AN").value(),LAST_AB_ACK_AN) == 0 ) &&
+                                                fixTime(it->attribute("Time").value())>mTime_AB_end) {
+                                        setAB_end(fixTime(it->attribute("Time").value()));
+                                        cout<<"Get AB END "<<mTime_AB_end<<endl;
+                                }
+                                else if(( strcmp(it->attribute("AN").value(),LAST_AB_ACK_AN) > 0 ) &&
+                                                fixTime(it->attribute("Time").value())>mTime_EI_end) {
+                                        setEI_end(fixTime(it->attribute("Time").value()));
+                                }
                         }
                 }
                 setDataSet(ms);
@@ -315,11 +368,28 @@ void fmnc_parser::load_file(string fn)
                                                 std::atoi(it->attribute("IPLength").value()),
                                                 std::atoi(it->attribute("TsVal").value()));
                                 ms->add_item(mp);
+                                if( strcmp(it->attribute("SN").value(),FIRST_AB_SN) == 0 ) {
+                                        setAB_start(fixTime(it->attribute("Time").value()));
+                                        cout<<"Get AB Start "<<mTime_AB_end<<endl;
+                                }
+                                else if(( strcmp(it->attribute("SN").value(),FIRST_EI_SN) == 0 )) {
+                                        setEI_start(fixTime(it->attribute("Time").value()));
+                                }
 
                         }
                 }
                 setDataSet(ms);
-
+                //Capture the 3-way shake info
+                st = doc.child("ConnectionTCPSlice").child("MeasureSetup");
+                for(pugi::xml_node_iterator it =st.begin();it != st.end();++it){
+                        if(strcmp( it->name(),"PktSYN") == 0  ) {
+                                setSYN_start(fixTime(it->attribute("Time").value()));
+                        }
+                        else if((strcmp( it->name(),"PktTCP") == 0 ) && 
+                                        ( strcmp(it->attribute("Meta").value(),"DataIn") == 0  )) {
+                                setSYN_end(fixTime(it->attribute("Time").value()));
+                        }
+                }
                 /* std::cout << "Load result: " << result << ",  Connection Request " << doc.child("ConnectionTCPSlice").attribute("Request").value() << std::endl; */
         }
 }

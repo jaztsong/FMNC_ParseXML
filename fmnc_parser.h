@@ -38,6 +38,12 @@ using namespace std;
 #define MAX_RATE_TARGET 10
 
 
+#define LAST_AB_ACK_AN "1062321"
+#define FIRST_AB_SN "1000151"
+
+#define FIRST_EI_SN "1090322"
+
+
 class fmnc_measurer_point
 {
         public:
@@ -128,6 +134,12 @@ class fmnc_parser
                 float mAB;
                 double mCor;
                 double mEI;
+                double mTime_SYN_end;
+                double mTime_SYN_start;
+                double mTime_AB_end;
+                double mTime_AB_start;
+                double mTime_EI_end;
+                double mTime_EI_start;
                 std::vector<float> mlocalAggre;
                 std::vector<unaggre_chunk*> m_unaggre_chunks;
                 string mfilename;
@@ -155,11 +167,23 @@ class fmnc_parser
                 float getEI(){return mEI;};
                 void detect_upbottleneck();
                 void calc_EI();
+                void setAB_end(double t){mTime_AB_end = t;};
+                void setAB_start(double t){mTime_AB_start = t;};
+
+                void setEI_start(double t){mTime_EI_start = t;};
+                void setEI_end(double t){mTime_EI_end = t;};
                 
+                void setSYN_start(double t){mTime_SYN_start = t;};
+                void setSYN_end(double t){mTime_SYN_end = t;};
+                
+                double getAB_duration();
+                double getEI_duration();
+                double get3way_duration();
 
 
                 
                 uint64_t mConnectionTime;
+                void init_times();
                 void start_parse();
                 void load_file(string fn);
                 uint64_t getConnectionTime();
