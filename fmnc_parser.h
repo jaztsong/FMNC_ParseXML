@@ -47,7 +47,7 @@ using namespace std;
 class fmnc_measurer_point
 {
         public:
-                fmnc_measurer_point (double t,uint16_t s, uint32_t ts);
+                fmnc_measurer_point (double t,uint16_t s, uint32_t ts,uint32_t an);
                 double get_time();
                 uint16_t get_size();
                 uint32_t getTsVal(){return mTsVal;};
@@ -56,6 +56,7 @@ class fmnc_measurer_point
                 double mTime;
                 uint16_t mSize;
                 uint32_t mTsVal;
+                uint32_t mSN_AN;
                 /* data */
 
 };

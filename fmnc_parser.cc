@@ -162,11 +162,12 @@ bool unaggre_chunk::decide_tag(float theta1,float theta2,uint8_t max)
 /////////////////////FMNC_MEASURER_POINT//////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 //
-fmnc_measurer_point::fmnc_measurer_point(double t,uint16_t s,uint32_t ts)
+fmnc_measurer_point::fmnc_measurer_point(double t,uint16_t s,uint32_t ts,uint32_t an)
 {
         mTime=t;
         mSize=s;
         mTsVal=ts;
+        mSN_AN=an;
         //TODO: Add more attribute later if needed For Lixing Thu 25 Feb 2016 01:43:03 PM EST.
 
 }
@@ -345,13 +346,13 @@ void fmnc_parser::load_file(string fn)
                                         ( strcmp(it->attribute("Meta").value(),"") != 0  )) {
                                 mp =new fmnc_measurer_point(fixTime(it->attribute("Time").value()),
                                                 std::atoi(it->attribute("IPLength").value()),
-                                                std::atoi(it->attribute("TsVal").value()));
+                                                std::atoi(it->attribute("TsVal").value()),
+                                                std::atoi(it->attribute("AN").value()));
                                 ms->add_item(mp);
 
                                 if(( strcmp(it->attribute("AN").value(),LAST_AB_ACK_AN) == 0 ) &&
                                                 fixTime(it->attribute("Time").value())>mTime_AB_end) {
                                         setAB_end(fixTime(it->attribute("Time").value()));
-                                        cout<<"Get AB END "<<mTime_AB_end<<endl;
                                 }
                                 else if(( strcmp(it->attribute("AN").value(),LAST_AB_ACK_AN) > 0 ) &&
                                                 fixTime(it->attribute("Time").value())>mTime_EI_end) {
@@ -366,11 +367,11 @@ void fmnc_parser::load_file(string fn)
                         if(strcmp( it->name(),"PktTCP") == 0  ) {
                                 mp =new fmnc_measurer_point(fixTime(it->attribute("Time").value()),
                                                 std::atoi(it->attribute("IPLength").value()),
-                                                std::atoi(it->attribute("TsVal").value()));
+                                                std::atoi(it->attribute("TsVal").value()),
+                                                std::atoi(it->attribute("AN").value()));
                                 ms->add_item(mp);
                                 if( strcmp(it->attribute("SN").value(),FIRST_AB_SN) == 0 ) {
                                         setAB_start(fixTime(it->attribute("Time").value()));
-                                        cout<<"Get AB Start "<<mTime_AB_end<<endl;
                                 }
                                 else if(( strcmp(it->attribute("SN").value(),FIRST_EI_SN) == 0 )) {
                                         setEI_start(fixTime(it->attribute("Time").value()));
@@ -425,6 +426,7 @@ bool fmnc_parser::parse_request()
         vector<string> strs;
         boost::split(strs,mRequest,boost::is_any_of("?"));
         for(vector<string>::iterator it=strs.begin();it != strs.end();++it){
+                Debug("Parseing request "<<*it);
                 if((*it).find("Length=") != std::string::npos)
                         mLab = atoi((*it).substr(7).c_str());
                 else if((*it).find("Rmax=") != std::string::npos)
@@ -439,7 +441,8 @@ bool fmnc_parser::parse_request()
                 else if((*it).find("SSID=") != std::string::npos &&
                            (*it).find("SSID=") == (size_t) 0 )
                         mRequestHelper.ssid = (*it).substr(5);
-                else if((*it).find("BSSID=") != std::string::npos)
+                else if((*it).find("BSSID=") != std::string::npos &&
+                           (*it).find("BSSID=") == (size_t) 0 )
                         mRequestHelper.bssid = (*it).substr(6);
                 else if((*it).find("RSSI=") != std::string::npos)
                         mRequestHelper.rssi = (*it).substr(5);
@@ -451,6 +454,10 @@ bool fmnc_parser::parse_request()
                         mRequestHelper.longitude = atof((*it).substr(5).c_str());
                 else if((*it).find("Acc=") != std::string::npos)
                         mRequestHelper.accelerate = atof((*it).substr(4).c_str());
+                else if((*it).find("TPError=true") != std::string::npos)
+                        return false;
+                //TODO: The crude way to filter out throughput bad data need to be changed For Lixing Sat 05 Mar 2016 06:12:11 PM EST.
+                
         }
         return true;
 
