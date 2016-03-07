@@ -341,7 +341,9 @@ void fmnc_parser::load_file(string fn)
                 fmnc_measurer_set* ms;
                 ms = new fmnc_measurer_set("Receive");
                 fmnc_measurer_point* mp;
+                uint16_t p_counter=0;
                 for(pugi::xml_node_iterator it =st.begin();it != st.end();++it){
+                        p_counter++;
                         if((strcmp( it->name(),"PktTCP") == 0 ) && 
                                         ( strcmp(it->attribute("Meta").value(),"") != 0  )) {
                                 mp =new fmnc_measurer_point(fixTime(it->attribute("Time").value()),
@@ -350,12 +352,14 @@ void fmnc_parser::load_file(string fn)
                                                 std::atoi(it->attribute("AN").value()));
                                 ms->add_item(mp);
 
-                                if(( strcmp(it->attribute("AN").value(),LAST_AB_ACK_AN) == 0 ) &&
-                                                fixTime(it->attribute("Time").value())>mTime_AB_end) {
+                                /* if(( strcmp(it->attribute("AN").value(),LAST_AB_ACK_AN) == 0 ) && */
+                                /*                 fixTime(it->attribute("Time").value())>mTime_AB_end) { */
+                                /*         setAB_end(fixTime(it->attribute("Time").value())); */
+                                /* } */
+                                if(p_counter == 100) {
                                         setAB_end(fixTime(it->attribute("Time").value()));
                                 }
-                                else if(( strcmp(it->attribute("AN").value(),LAST_AB_ACK_AN) > 0 ) &&
-                                                fixTime(it->attribute("Time").value())>mTime_EI_end) {
+                                else if( fixTime(it->attribute("Time").value())>mTime_EI_end) {
                                         setEI_end(fixTime(it->attribute("Time").value()));
                                 }
                         }
