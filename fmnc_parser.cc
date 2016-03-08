@@ -458,7 +458,7 @@ bool fmnc_parser::parse_request()
                 else if((*it).find("Acc=") != std::string::npos)
                         mRequestHelper.accelerate = atof((*it).substr(4).c_str());
                 else if((*it).find("TPError=true") != std::string::npos)
-                        return false;
+                        mRequestHelper.throughput= 0;
                 //TODO: The crude way to filter out throughput bad data need to be changed For Lixing Sat 05 Mar 2016 06:12:11 PM EST.
                 
         }
