@@ -207,8 +207,6 @@ fmnc_parser::fmnc_parser(string fn)
         mRmax = DEFAULT_RMAX;
         mAB = 0.0;
         mRequestHelper.throughput = 0;
-        mRequestHelper.latitude = 0;
-        mRequestHelper.longitude = 0;
         mRequestHelper.accelerate = 0;
         init_times();
         
@@ -272,8 +270,8 @@ void fmnc_parser::dump_str()
         result += "%s,";
         result += "%s,";
         result += "%u,";
-        result += "%.2f,";
-        result += "%.2f,";
+        result += "%s,";
+        result += "%s,";
         result += "%.2f\n";
 
         printf(result.c_str(),get_filename().c_str(),getConnectionTime(),average(mRTT),
@@ -282,7 +280,8 @@ void fmnc_parser::dump_str()
                         mRequestHelper.app.c_str(),mRequestHelper.id.c_str(),
                         mRequestHelper.type.c_str(),mRequestHelper.ssid.c_str(),
                         mRequestHelper.bssid.c_str(),mRequestHelper.rssi.c_str(),
-                        mRequestHelper.throughput,mRequestHelper.latitude,mRequestHelper.longitude,mRequestHelper.accelerate);
+                        mRequestHelper.throughput,mRequestHelper.latitude.c_str(),
+                        mRequestHelper.longitude.c_str(),mRequestHelper.accelerate);
 
 }
 string fmnc_parser::get_filename()
@@ -453,9 +452,9 @@ bool fmnc_parser::parse_request()
                 else if((*it).find("Throughput=") != std::string::npos)
                         mRequestHelper.throughput= atoi((*it).substr(11).c_str());
                 else if((*it).find("Lat=") != std::string::npos)
-                        mRequestHelper.latitude = atof((*it).substr(4).c_str());
+                        mRequestHelper.latitude = (*it).substr(4).c_str();
                 else if((*it).find("Long=") != std::string::npos)
-                        mRequestHelper.longitude = atof((*it).substr(5).c_str());
+                        mRequestHelper.longitude = (*it).substr(5).c_str();
                 else if((*it).find("Acc=") != std::string::npos)
                         mRequestHelper.accelerate = atof((*it).substr(4).c_str());
                 else if((*it).find("TPError=true") != std::string::npos)
