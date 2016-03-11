@@ -14,7 +14,7 @@
 using namespace std;
 
 //Debug
-/* #define DEBUG */
+#define DEBUG
 
 #ifdef DEBUG
 #define Debug( x  ) std::cout << x <<endl;

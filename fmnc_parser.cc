@@ -86,11 +86,11 @@ void unaggre_chunk::find_jumbo()
         /* for(int i = 0;i<(*mInterACK).size();i++) */
         /*         cout<<" InterACK "<<i<<" "<<(*mInterACK)[i]<<endl; */
         /* Debug("The End start from "<<end); */
-        end = min((uint32_t)(*mInterACK).size()-2,end);
+        end = min((uint32_t)(*mInterACK).size(),end);
         end = min(mLab-2,end);
         //default
         set_j_end(end);
-        for(uint32_t offset=0;offset<(*mInterACK).size() - 1;offset++){
+        for(uint32_t offset=0;offset+1<(*mInterACK).size() ;offset++){
                 Debug("looking end "<<end<<" "<<offset<<" "<<(*mInterACK).size());
                 if(end < (*mInterACK).size() - 1 && end < mLab ){
                         Debug(" + offset"<<end + offset);
@@ -505,7 +505,7 @@ float fmnc_parser::calcAggregation()
 
         }
         else{
-                cerr<<"*Error: InterAck is empty"<<endl;
+                cerr<<mfilename<<"calcAggregation:*Error: InterAck is empty"<<endl;
                 return 1/0.0;
         }
 }
@@ -526,7 +526,7 @@ void fmnc_parser::getLocalAggregation()
 
         }
         else{
-                cerr<<"*Error: InterAck is empty"<<endl;
+                cerr<<mfilename<<"getLocalAggregation:*Error: InterAck is empty"<<endl;
         }
         Debug("Calculated local Aggregation list with size "<<mlocalAggre.size());
     
@@ -622,14 +622,14 @@ void fmnc_parser::rate_analysis()
         }
         //Check the end part
         unaggre_chunk uc = unaggre_chunk(end);
-        uc.set_length(get_mLab());//It does not matter since we have filter later
+        uc.set_length(min(get_mLab(),(uint32_t)mInterACK.size()));//It does not matter since we have filter later
         uc.setLab(get_mLab());
         uc.setDataSet(getDataSet("Receive"));
         uc.setDataSet(getDataSet("Send"));
         uc.setInterACK(&mInterACK);
         Debug("Final Evaluate Chunk "<<uc.get_start()<<" /w length=" <<uc.get_length());
         uc.find_jumbo();
-        uc.set_j_end((uint32_t)(min(mLab-2,(uint32_t)mInterACK.size()-2)));
+        uc.set_j_end((uint32_t)(min((uint32_t)mLab-2,(uint32_t)mInterACK.size())));
         uc.calc_rates();
         if(uc.decide_tag(THETA1,F_THETA2,mRmax)){
                 Debug(" Good ");
@@ -647,6 +647,10 @@ void fmnc_parser::detect_upbottleneck()
         uint32_t t_len = min(mLab,(uint32_t)(*rcvd_list).size());
         std::vector<double> v_tsp,v_rcvd;
         /* cout<<"Start to Populate "<<t_len<<endl; */
+        if(t_len < 1){
+                cerr<<mfilename<<"*Error: Detect up find length < 1"<<endl;
+                return;
+        }
         
         Debug("The base for SENTACK is "<<float((*rcvd_list)[t_len-1]->getTsVal() - (*rcvd_list)[0]->getTsVal()));
         Debug("The base for RCVD is "<<float((*rcvd_list)[t_len-1]->get_time() - (*rcvd_list)[0]->get_time()));
