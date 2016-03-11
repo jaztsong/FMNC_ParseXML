@@ -58,7 +58,6 @@ void unaggre_chunk::set_j_start(uint32_t st)
 }
 void unaggre_chunk::find_jumbo()
 {
-        Debug("Find jumbo");
         //Find Start
         uint32_t st=start_index,end = start_index+length-1;
         //default
@@ -82,15 +81,15 @@ void unaggre_chunk::find_jumbo()
                         }
                 }
         }
-        Debug("Find Start "<<st<<" "<<j_start);
+        /* Debug("Find Start "<<st<<" "<<j_start); */
         //Find End
         /* for(int i = 0;i<(*mInterACK).size();i++) */
         /*         cout<<" InterACK "<<i<<" "<<(*mInterACK)[i]<<endl; */
-        Debug("The End start from "<<end);
+        /* Debug("The End start from "<<end); */
         end = min((uint32_t)(*mInterACK).size()-2,end);
+        end = min(mLab-2,end);
         //default
         set_j_end(end);
-        Debug(" to "<<end);
         for(uint32_t offset=0;offset<(*mInterACK).size() - 1;offset++){
                 Debug("looking end "<<end<<" "<<offset<<" "<<(*mInterACK).size());
                 if(end < (*mInterACK).size() - 1 && end < mLab ){
@@ -110,7 +109,7 @@ void unaggre_chunk::find_jumbo()
                         }
                 }
         }
-        Debug("Find End "<<end<<" "<<j_end);
+        /* Debug("Find End "<<end<<" "<<j_end); */
 
 }
 
@@ -131,7 +130,7 @@ void unaggre_chunk::calc_rates()
         //Send
         sum_time =1e6*( ( *tmp )[j_end+1]->get_time()-( *tmp )[j_start]->get_time() );
         
-        for(uint32_t i = j_start+1;i<j_end+2;i++){
+        for(uint32_t i = j_start;i<j_end+1;i++){
                sum_size += ( ( *tmp )[i]->get_size() )*8;
         }
         sent_rate = sum_size/sum_time;
@@ -141,7 +140,6 @@ void unaggre_chunk::calc_rates()
         sum_time=0;
         sum_time =1e6*( ( *tmp )[j_end+1]->get_time()-( *tmp )[j_start]->get_time() );
         rcvd_rate = sum_size/sum_time;
-        /* cout<<" sum time "<<sum_time<<" sum size "<<sum_size<<endl; */
         
         Debug(" rates: "<<start_index<<" rcvd: "<<rcvd_rate<<" send: "<<sent_rate);
         /* cout<<" rates: "<<start_index<<" rcvd: "<<rcvd_rate<<" send: "<<sent_rate<<endl; */
@@ -429,7 +427,7 @@ bool fmnc_parser::parse_request()
         vector<string> strs;
         boost::split(strs,mRequest,boost::is_any_of("?"));
         for(vector<string>::iterator it=strs.begin();it != strs.end();++it){
-                Debug("Parseing request "<<*it);
+                /* Debug("Parseing request "<<*it); */
                 if((*it).find("Length=") != std::string::npos)
                         mLab = atoi((*it).substr(7).c_str());
                 else if((*it).find("Rmax=") != std::string::npos)
@@ -630,10 +628,10 @@ void fmnc_parser::rate_analysis()
         uc.setDataSet(getDataSet("Send"));
         uc.setInterACK(&mInterACK);
         Debug("Final Evaluate Chunk "<<uc.get_start()<<" /w length=" <<uc.get_length());
-        uc.set_j_start((uint32_t)(end));
-        uc.set_j_end((uint32_t)(min(mLab,(uint32_t)mInterACK.size())));
+        uc.find_jumbo();
+        uc.set_j_end((uint32_t)(min(mLab-2,(uint32_t)mInterACK.size()-2)));
         uc.calc_rates();
-        if(uc.decide_tag(THETA1,THETA2,mRmax)){
+        if(uc.decide_tag(THETA1,F_THETA2,mRmax)){
                 Debug(" Good ");
                 mAB = 12;
                 return;

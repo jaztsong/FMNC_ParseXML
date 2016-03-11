@@ -35,6 +35,7 @@ using namespace std;
 #define ACCU_FALSE_LMT 19
 #define THETA1 0.1f
 #define THETA2 0.5
+#define F_THETA2 0.1
 #define MAX_RATE_TARGET 10
 
 
