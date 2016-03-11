@@ -14,7 +14,7 @@
 using namespace std;
 
 //Debug
-#define DEBUG
+/* #define DEBUG */
 
 #ifdef DEBUG
 #define Debug( x  ) std::cout << x <<endl;
@@ -43,6 +43,14 @@ using namespace std;
 #define FIRST_AB_SN "1000151"
 
 #define FIRST_EI_SN "1090322"
+
+#define AN_R1 "1000001"
+#define AN_R2 "1003001"
+#define AN_R3 "1014441"
+#define AN_R4 "1034321"
+#define AN_R5 "1062321"
+#define AN_E1 "1090321"
+#define AN_E2 "1090341"
 
 
 class fmnc_measurer_point
@@ -129,6 +137,17 @@ class fmnc_parser
                         string longitude;
                         float accelerate;
                 };
+                struct AN_logger{
+                        uint32_t nR1;
+                        uint32_t nR2;
+                        uint32_t nR3;
+                        uint32_t nR4;
+                        uint32_t nR5;
+                        uint32_t nE1;
+                        uint32_t nE2;
+                        uint32_t nOther;
+                };
+                AN_logger mAN_logger;
                 request_helper mRequestHelper;
                 string mRequest;
                 uint32_t mLab;
@@ -184,8 +203,11 @@ class fmnc_parser
 
 
                 
+                string dump_AN_logger();
                 uint64_t mConnectionTime;
                 void init_times();
+                void init_AN_loger();
+                void update_AN_logger(string s);
                 void start_parse();
                 void load_file(string fn);
                 uint64_t getConnectionTime();

@@ -207,6 +207,7 @@ fmnc_parser::fmnc_parser(string fn)
         mRequestHelper.throughput = 0;
         mRequestHelper.accelerate = 0;
         init_times();
+        init_AN_loger();
         
 
 
@@ -224,6 +225,19 @@ void fmnc_parser::init_times()
         mTime_SYN_end = 0;
         mTime_SYN_start = 0;
 }
+void fmnc_parser::init_AN_loger()
+{
+
+        mAN_logger.nR1=1;
+        mAN_logger.nR2=0;
+        mAN_logger.nR3=0;
+        mAN_logger.nR4=0;
+        mAN_logger.nR5=0;
+        mAN_logger.nE1=0;
+        mAN_logger.nE2=0;
+        mAN_logger.nOther=0;
+
+}
 void fmnc_parser::dump_str()
 {
         
@@ -236,6 +250,7 @@ void fmnc_parser::dump_str()
         //result += "ab=%.2f";
         //result += "cor=%.2f";
         //result += "ei=%.2f";
+        //result += "ANs=%s";
         //result += "ab_time=%.2f";
         //result += "ei_time=%.2f";
         //result += "3way_time=%.2f";
@@ -258,6 +273,7 @@ void fmnc_parser::dump_str()
         result += "%.2f,";
         result += "%.2f,";
         result += "%.2f,";
+        result += "%s,";
         result += "%.2f,";
         result += "%.2f,";
         result += "%.2f,";
@@ -273,7 +289,7 @@ void fmnc_parser::dump_str()
         result += "%.2f\n";
 
         printf(result.c_str(),get_filename().c_str(),getConnectionTime(),average(mRTT),
-                        calc_packetloss(),calcAggregation(),getAB(),getCor(),getEI(),
+                        calc_packetloss(),calcAggregation(),getAB(),getCor(),getEI(),dump_AN_logger().c_str(),
                         getAB_duration(),getEI_duration(),get3way_duration(),
                         mRequestHelper.app.c_str(),mRequestHelper.id.c_str(),
                         mRequestHelper.type.c_str(),mRequestHelper.ssid.c_str(),
@@ -322,6 +338,38 @@ void fmnc_parser::start_parse()
         }
 
 }
+string fmnc_parser::dump_AN_logger()
+{
+        char output[50];
+        sprintf(output,"[%u:%u:%u:%u:%u:%u:%u:%u]",
+                        mAN_logger.nR1,mAN_logger.nR2,
+                        mAN_logger.nR3,mAN_logger.nR4,
+                       mAN_logger.nR5,mAN_logger.nE1,
+                      mAN_logger.nE2,mAN_logger.nOther);
+        /* cout<<" "<<mAN_logger.nR1<<" "<<mAN_logger.nR2<<" "<<mAN_logger.nR3<<endl; */
+        return string(output);
+}
+void fmnc_parser::update_AN_logger(string s)
+{
+        
+                if(strcmp(s.c_str(),AN_R1) == 0)
+                        mAN_logger.nR1++;
+                else if(strcmp(s.c_str(),AN_R2) == 0)
+                        mAN_logger.nR2++;
+                else if(strcmp(s.c_str(),AN_R3) == 0)
+                        mAN_logger.nR3++;
+                else if(strcmp(s.c_str(),AN_R4) == 0)
+                        mAN_logger.nR4++;
+                else if(strcmp(s.c_str(),AN_R5) == 0)
+                        mAN_logger.nR5++;
+                else if(strcmp(s.c_str(),AN_E1) == 0)
+                        mAN_logger.nE1++;
+                else if(strcmp(s.c_str(),AN_E2) == 0)
+                        mAN_logger.nE2++;
+                else
+                        mAN_logger.nOther++;
+        
+}
 void fmnc_parser::load_file(string fn)
 {
         pugi::xml_document doc;
@@ -349,6 +397,8 @@ void fmnc_parser::load_file(string fn)
                                                 std::atoi(it->attribute("AN").value()));
                                 ms->add_item(mp);
 
+                                //Update the logger for the purpose of parsing loss later
+                                update_AN_logger(it->attribute("AN").value());
                                 /* if(( strcmp(it->attribute("AN").value(),LAST_AB_ACK_AN) == 0 ) && */
                                 /*                 fixTime(it->attribute("Time").value())>mTime_AB_end) { */
                                 /*         setAB_end(fixTime(it->attribute("Time").value())); */
