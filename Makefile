@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS= -Wall -g 
 LFLAGS=-fopenmp
-LIBS=-lboost_system
+LIBS=-lboost_system -lboost_filesystem 
 SRCS= main.cc fmnc_parser.cc pugixml-1.7/src/pugixml.cpp
 
 OBJS = $(SRCS:.cc=.o)

@@ -12,6 +12,13 @@ double fixTime(string s)
         boost::split(strs,s,boost::is_any_of("."));
         return atof(strs[0].c_str())+atof(strs[1].c_str())/1e6;
 }
+template <typename T>
+std::string to_string(T value)
+{
+        std::ostringstream os;
+        os << value;
+        return os.str();
+}
 double pearson_correlation(vector<double> x,vector<double> y)
 {
         double x_mean=average(x),y_mean=average(y);
@@ -296,7 +303,69 @@ void fmnc_parser::dump_str()
                         mRequestHelper.bssid.c_str(),mRequestHelper.rssi.c_str(),
                         mRequestHelper.throughput,mRequestHelper.latitude.c_str(),
                         mRequestHelper.longitude.c_str(),mRequestHelper.accelerate);
+        dump_web();
 
+}
+struct tm * fmnc_parser::parse_time(uint64_t t)
+{
+        time_t tt=t;
+        struct tm * ptm = localtime(&tt);
+        return ptm;
+}
+void fmnc_parser::dump_web()
+{
+        struct tm *ptm=parse_time(getConnectionTime());
+        string dir=WEB_RESULT_DIR;
+        //Get time and date
+        static  char date[20];
+        sprintf(date,"%d-%.2d-%.2d",1900+ptm->tm_year,1+ptm->tm_mon,ptm->tm_mday);
+        static  char time[20];
+        sprintf(time,"%.2d:%.2d:%.2d",ptm->tm_hour,ptm->tm_min,ptm->tm_sec);
+
+        dir += "/" +mRequestHelper.app+"-"+mRequestHelper.id;
+        dir += "/" + string(date);
+        Debug("The dump web dir "<<dir);
+        boost::filesystem::path w_dir(dir);
+        //Create the dir if not exist
+        boost::filesystem::create_directories(w_dir);        
+        string fn=dir+"/"+time+".html";
+        ofstream myfile (fn.c_str());
+        if (myfile.is_open())
+        {
+                myfile << prepare_web_content(ptm);
+                myfile.close();
+        }
+        else 
+                cerr << "**dump_web-Error:Unable to open file";
+
+}
+string fmnc_parser::prepare_web_content(struct tm * ptm)
+{
+        string ct = "";
+        ct += "<!DOCTYPE html> \
+                <html>\
+                <head>\
+                <title>\
+                FMNC Test Result from";
+        static  char time[20];
+        static  char date[20];
+        sprintf(date,"%d-%.2d-%.2d",1900+ptm->tm_year,1+ptm->tm_mon,ptm->tm_mday);
+        sprintf(time,"%.2d:%.2d:%.2d",ptm->tm_hour,ptm->tm_min,ptm->tm_sec);
+        ct += string(date)+" "+string(time);
+        ct += " </title>\
+                </head>\
+                <body>\
+                <h1>FMNC Test Result for "+string(date)+" "+string(time)+"</h1>\
+                <table border=1>\
+                <td> RTT (ms) </td>\
+                <td> "+to_string(average(mRTT)) +" </td>\
+                </tr>";
+
+        ct += "</table>\
+               </body>\
+               </html>";
+        return ct;
+                                    
 }
 string fmnc_parser::get_filename()
 {

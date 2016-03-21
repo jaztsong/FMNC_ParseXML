@@ -2,12 +2,14 @@
 #include<cstdlib>
 #include <stdint.h>
 #include<iostream>
+#include <fstream>
 #include<typeinfo>
 #include <string>
 #include <string.h>
 #include<sstream>
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 #include<vector>
 #include <cmath>
 #include "pugixml-1.7/src/pugixml.hpp"
@@ -22,6 +24,7 @@ using namespace std;
 #define Debug( x  ) 
 #endif
 
+#define WEB_RESULT_DIR "./Web"
 #define MAX_FILE_SIZE 200000
 #define EI_LENGTH  40
 #define DEFAULT_RMAX  15
@@ -35,7 +38,7 @@ using namespace std;
 #define ACCU_FALSE_LMT 19
 #define THETA1 0.1f
 #define THETA2 0.5
-#define F_THETA2 0.1
+#define F_THETA2 0.5
 #define MAX_RATE_TARGET 10
 
 
@@ -122,6 +125,7 @@ class fmnc_parser
         public:
                 fmnc_parser(string fn);
                 void dump_str();
+                void dump_web();
                 fmnc_measurer_set* getDataSet(string s);
                 uint32_t get_mLab(){return mLab;};
         private:
@@ -172,6 +176,8 @@ class fmnc_parser
 
 
 
+                string prepare_web_content(struct tm * ptm);
+                struct tm * parse_time(uint64_t t);
                 bool parse_request();
                 void setRequest(string s){mRequest = s;};
                 void calcRTT();
