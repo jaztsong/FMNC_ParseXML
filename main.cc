@@ -22,7 +22,19 @@ int main(int argc, char* argv[]){
                 flist=listFile(defaultPath.c_str());
         }
         else{
-                flist=listFile(argv[1]);
+                string fn(argv[1]);
+                size_t found = fn.find_last_of(".");
+                string ext =fn.substr(found+1);
+                if( strcmp(ext.c_str(), "xml") == 0 &&
+                                getFileSize(argv[1]) < MAX_FILE_SIZE){
+                        Debug(argv[1]<<": the File Size is "<<getFileSize(argv[1]));
+                        fmnc_parser parser(argv[1]);
+                        parser.dump_str();
+                        return 0;
+                }
+                else{
+                        flist=listFile(argv[1]);
+                }
         }
         omp_set_num_threads(1);
 #pragma omp parallel

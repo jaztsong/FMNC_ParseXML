@@ -30,7 +30,7 @@ using namespace std;
 #define AI_GAP_THRESHOLD  0.4f
 #define DEFAULT_LAB  100
 #define DEFAULT_LOCAL_WINDOW 5
-#define AI_THRESHOLD 0.8f
+#define AI_THRESHOLD 0.9f
 #define CHUNK_SIZE 10
 #define ACCU_FALSE_LMT 19
 #define THETA1 0.1f
