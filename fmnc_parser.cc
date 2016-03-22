@@ -356,11 +356,81 @@ string fmnc_parser::prepare_web_content(struct tm * ptm)
                 </head>\
                 <body>\
                 <h1>FMNC Test Result for "+string(date)+" "+string(time)+"</h1>\
-                <table border=1>\
-                <td> RTT (ms) </td>\
-                <td> "+to_string(average(mRTT)) +" </td>\
-                </tr>";
+                <table border=1>";
 
+        string AB_result="";
+        if(getAB()==12.0){
+                AB_result = "> 10 Mb/s";
+        }
+        else if (getAB()==0.0){
+                AB_result == "< 1 Mb/s";
+        }
+        else
+                AB_result=to_string(getAB());
+        ct +=  "<tr>\
+                <td rowspan=\"6\"> User Profile</td>\
+                <td> Client App </td>\
+                <td>"+mRequestHelper.app+"</td>\
+                </tr>\
+                <tr>\
+                <td> Client ID </td>\
+                <td>"+mRequestHelper.id+"</td>\
+                </tr>\
+                <tr>\
+                <td> SSID </td>\
+                <td>"+mRequestHelper.ssid+"</td>\
+                </tr>\
+                <tr>\
+                <td> BSSID </td>\
+                <td>"+mRequestHelper.bssid+"</td>\
+                </tr>\
+                <tr>\
+                <td> Longitude </td>\
+                <td>"+mRequestHelper.longitude+"</td>\
+                </tr>\
+                <tr>\
+                <td> Latitude </td>\
+                <td>"+mRequestHelper.latitude+"</td>\
+                </tr> ";
+
+        ct +=  "<tr>\
+                <td rowspan=\"6\"> FMNC Measurement</td>\
+                <td> RTT (ms) </td>\
+                <td>"+to_string(average(mRTT))+"</td>\
+                </tr>\
+                <tr>\
+                <td> PDR </td>\
+                <td>"+to_string(calc_packetloss())+"</td>\
+                </tr>\
+                <tr>\
+                <td> Available Bandwidth (Mb/s) </td>\
+                <td>"+AB_result+"</td>\
+                </tr>\
+                <tr>\
+                <td> AB estimation Time (ms) </td>\
+                <td>"+to_string(getAB_duration())+"</td>\
+                </tr>\
+                <tr>\
+                <td> Elasticity Index </td>\
+                <td>"+to_string(getEI())+"</td>\
+                </tr>\
+                <tr>\
+                <td> Uplink Pearson Correlation </td>\
+                <td>"+to_string(getCor())+"</td>\
+                </tr>";
+        ct +=  "<tr>\
+                <td rowspan=\"3\">Achievable Throughput</td>\
+                <td> Download Size (MB)</td>\
+                <td>7.2</td>\
+                </tr>\
+                <tr>\
+                <td> Download Time (ms)</td>\
+                <td>"+to_string(mRequestHelper.throughput)+"</td>\
+                </tr>\
+                <tr>\
+                <td> Average Throughput (Mb/s)</td>\
+                <td>"+to_string(7.2*8*1000/mRequestHelper.throughput)+"</td>\
+                </tr>";
         ct += "</table>\
                </body>\
                </html>";
