@@ -412,7 +412,7 @@ string fmnc_parser::prepare_web_content(struct tm * ptm)
                 </tr>\
                 <tr>\
                 <td> Elasticity Index </td>\
-                <td>"+to_string(getEI())+"</td>\
+                <td>"+to_string(abs(getEI()-10))+"</td>\
                 </tr>\
                 <tr>\
                 <td> Uplink Pearson Correlation </td>\
