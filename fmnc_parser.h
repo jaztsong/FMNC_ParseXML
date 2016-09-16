@@ -24,7 +24,7 @@ using namespace std;
 #define Debug( x  ) 
 #endif
 
-#define WEB_RESULT_DIR "./Web"
+#define WEB_RESULT_DIR "/home/lsong2/Web"
 #define MAX_FILE_SIZE 200000
 #define EI_LENGTH  40
 #define DEFAULT_RMAX  15
@@ -177,6 +177,7 @@ class fmnc_parser
 
 
                 string prepare_web_content(struct tm * ptm);
+                string prepare_D3JS(string id, string pos, string data, string ylabel);
                 struct tm * parse_time(uint64_t t);
                 bool parse_request();
                 void setRequest(string s){mRequest = s;};

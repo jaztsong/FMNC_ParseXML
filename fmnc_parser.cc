@@ -342,20 +342,45 @@ void fmnc_parser::dump_web()
 string fmnc_parser::prepare_web_content(struct tm * ptm)
 {
         string ct = "";
-        ct += "<!DOCTYPE html> \
-                <html>\
-                <head>\
-                <title>\
+        ct += "<!DOCTYPE html> \n\
+                <html>\n\
+                <head>\n\
+                <title>\n\
                 FMNC Test Result from";
         static  char time[20];
         static  char date[20];
         sprintf(date,"%d-%.2d-%.2d",1900+ptm->tm_year,1+ptm->tm_mon,ptm->tm_mday);
         sprintf(time,"%.2d:%.2d:%.2d",ptm->tm_hour,ptm->tm_min,ptm->tm_sec);
         ct += string(date)+" "+string(time);
-        ct += " </title>\
-                </head>\
-                <body>\
-                <h1>FMNC Test Result for "+string(date)+" "+string(time)+"</h1>\
+        ct += " </title>";
+	ct += "<script src=\"http://mbostock.github.com/d3/d3.v2.js\"></script>\n\
+		<style>\n\
+			path {\n\
+				stroke: steelblue;\n\
+				stroke-width: 1;\n\
+				fill: none;\n\
+			}\n\
+			.axis {\n\
+			  shape-rendering: crispEdges;\n\
+			}\n\
+			.x.axis line {\n\
+			  stroke: lightgrey;\n\
+			}\n\
+			.x.axis .minor {\n\
+			  stroke-opacity: .5;\n\
+			}\n\
+			.x.axis path {\n\
+			  display: none;\n\
+			}\n\
+			.y.axis line, .y.axis path {\n\
+			  fill: none;\n\
+			  stroke: #000;\n\
+			}\n\
+		</style>";
+
+        ct += " </head>\n\
+                <body>\n\
+                <h1>FMNC Test Result for "+string(date)+" "+string(time)+"</h1>\n\
                 <table border=1>";
 
         string AB_result="";
@@ -363,80 +388,165 @@ string fmnc_parser::prepare_web_content(struct tm * ptm)
                 AB_result = "> 10 Mb/s";
         }
         else if (getAB()==0.0){
-                AB_result == "< 1 Mb/s";
+                AB_result = "< 1 Mb/s";
         }
         else
                 AB_result=to_string(getAB());
-        ct +=  "<tr>\
-                <td rowspan=\"6\"> User Profile</td>\
-                <td> Client App </td>\
-                <td>"+mRequestHelper.app+"</td>\
-                </tr>\
-                <tr>\
-                <td> Client ID </td>\
-                <td>"+mRequestHelper.id+"</td>\
-                </tr>\
-                <tr>\
-                <td> SSID </td>\
-                <td>"+mRequestHelper.ssid+"</td>\
-                </tr>\
-                <tr>\
-                <td> BSSID </td>\
-                <td>"+mRequestHelper.bssid+"</td>\
-                </tr>\
-                <tr>\
-                <td> Longitude </td>\
-                <td>"+mRequestHelper.longitude+"</td>\
-                </tr>\
-                <tr>\
-                <td> Latitude </td>\
-                <td>"+mRequestHelper.latitude+"</td>\
+
+        ct +=  "<tr>\n\
+                <td rowspan=\"6\"> User Profile</td>\n\
+                <td> Client App </td>\n\
+                <td>"+mRequestHelper.app+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> Client ID </td>\n\
+                <td>"+mRequestHelper.id+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> SSID </td>\n\
+                <td>"+mRequestHelper.ssid+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> BSSID </td>\n\
+                <td>"+mRequestHelper.bssid+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> Longitude </td>\n\
+                <td>"+mRequestHelper.longitude+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> Latitude </td>\n\
+                <td>"+mRequestHelper.latitude+"</td>\n\
                 </tr> ";
 
-        ct +=  "<tr>\
-                <td rowspan=\"6\"> FMNC Measurement</td>\
-                <td> RTT (ms) </td>\
-                <td>"+to_string(average(mRTT))+"</td>\
-                </tr>\
-                <tr>\
-                <td> PDR </td>\
-                <td>"+to_string(calc_packetloss())+"</td>\
-                </tr>\
-                <tr>\
-                <td> Available Bandwidth (Mb/s) </td>\
-                <td>"+AB_result+"</td>\
-                </tr>\
-                <tr>\
-                <td> AB estimation Time (ms) </td>\
-                <td>"+to_string(getAB_duration())+"</td>\
-                </tr>\
-                <tr>\
-                <td> Elasticity Index </td>\
-                <td>"+to_string(abs(getEI()-10))+"</td>\
-                </tr>\
-                <tr>\
-                <td> Uplink Pearson Correlation </td>\
-                <td>"+to_string(getCor())+"</td>\
+        ct +=  "<tr>\n\
+                <td rowspan=\"6\"> FMNC Measurement</td>\n\
+                <td> RTT (ms) </td>\n\
+                <td>"+to_string(average(mRTT))+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> PDR </td>\n\
+                <td>"+to_string(calc_packetloss())+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> Available Bandwidth (Mb/s) </td>\n\
+                <td>"+AB_result+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> AB estimation Time (ms) </td>\n\
+                <td>"+to_string(getAB_duration())+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> Elasticity Index </td>\n\
+                <td>"+to_string(abs(getEI()-10))+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> Uplink Pearson Correlation </td>\n\
+                <td>"+to_string(getCor())+"</td>\n\
                 </tr>";
-        ct +=  "<tr>\
-                <td rowspan=\"3\">Achievable Throughput</td>\
-                <td> Download Size (MB)</td>\
-                <td>7.2</td>\
-                </tr>\
-                <tr>\
-                <td> Download Time (ms)</td>\
-                <td>"+to_string(mRequestHelper.throughput)+"</td>\
-                </tr>\
-                <tr>\
-                <td> Average Throughput (Mb/s)</td>\
-                <td>"+to_string(7.2*8*1000/mRequestHelper.throughput)+"</td>\
+        ct +=  "<tr>\n\
+                <td rowspan=\"3\">Achievable Throughput</td>\n\
+                <td> Download Size (MB)</td>\n\
+                <td>7.2</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> Download Time (ms)</td>\n\
+                <td>"+to_string(mRequestHelper.throughput)+"</td>\n\
+                </tr>\n\
+                <tr>\n\
+                <td> Average Throughput (Mb/s)</td>\n\
+                <td>"+to_string(7.2*8*1000/mRequestHelper.throughput)+"</td>\n\
                 </tr>";
-        ct += "</table>\
-               </body>\
+        ct += "</table>\n\
+		<h2>Analysis Graphs:</h2>";
+	string data;
+	stringstream ss;
+	for(uint32_t i=0; i<mRTT.size();i++){
+		//sprintf(buffer[i*6],"%.2f",mRTT[i]);
+		ss<<mRTT[i]<<",";
+	}
+	data = ss.str();
+	ct += prepare_D3JS("0","500",data,"RTT(ms)");
+
+	ss.str("");
+	ss.clear();
+	for(uint32_t i=0; i<mInterACK.size();i++){
+		//sprintf(buffer[i*6],"%.2f",mRTT[i]);
+		ss<<mInterACK[i]<<",";
+	}
+	data = ss.str();
+	ct += prepare_D3JS("1","850",data,"InterACK(ms)");
+
+	ss.str("");
+	ss.clear();
+	for(uint32_t i=0; i<mlocalAggre.size();i++){
+		//sprintf(buffer[i*6],"%.2f",mRTT[i]);
+		ss<<mlocalAggre[i]<<",";
+	}
+	data = ss.str();
+	ct += prepare_D3JS("1","850",data,"Local Aggregation Index");
+
+
+
+
+        ct += "</body>\n\
                </html>";
+
         return ct;
                                     
 }
+string fmnc_parser::prepare_D3JS(string id, string pos, string data, string ylabel)
+{
+	string result="";
+	result = "<div id=\"graph"+id+"\" class=\"aGraph\" style=\"position:absolute;top:"+pos+"px;left:0; float:left;\"></div>\n\
+	<script>\n\
+		var m = [80, 80, 80, 80]; \n\
+		var w = 1000 - m[1] - m[3];\n\
+		var h = 400 - m[0] - m[2]; \n\ 
+		var data = [";
+	result += data;
+
+	result += "];\n\
+		var x = d3.scale.linear().domain([0, data.length]).range([0, w]);\n\
+		var y = d3.scale.linear().domain([0, d3.max(data)]).range([h, 0]);\n\
+		var line = d3.svg.line()\n\
+			.x(function(d,i) { \n\
+				console.log('Plotting X value for data point: ' + d + ' using index: ' + i + ' to be at: ' + x(i) + ' using our xScale.');\n\
+				return x(i); \n\
+			})\n\
+			.y(function(d) { \n\
+				console.log('Plotting Y value for data point: ' + d + ' to be at: ' + y(d) + \" using our yScale.\");\n\
+				return y(d); \n\
+			})\n\
+			var graph"+id+" = d3.select(\"#graph"+id+"\").append(\"svg:svg\")\n\
+			      .attr(\"width\", w + m[1] + m[3])\n\
+			      .attr(\"height\", h + m[0] + m[2])\n\
+			    .append(\"svg:g\")\n\
+			      .attr(\"transform\", \"translate(\" + m[3] + \",\" + m[0] + \")\");\n\
+			var xAxis = d3.svg.axis().scale(x).tickSize(-h).tickSubdivide(true);\n\
+			graph"+id+".append(\"svg:g\")\n\
+			      .attr(\"class\", \"x axis\")\n\
+			      .attr(\"transform\", \"translate(0,\" + h + \")\")\n\
+			      .call(xAxis);\n\
+			var yAxisLeft = d3.svg.axis().scale(y).ticks(4).orient(\"left\");\n\
+			graph"+id+".append(\"svg:g\")\n\
+			      .attr(\"class\", \"y axis\")\n\
+			      .attr(\"transform\", \"translate(-25,0)\")\n\
+			      .call(yAxisLeft);\n\
+  			graph"+id+".append(\"svg:path\").attr(\"d\", line(data));\n\
+			graph"+id+".append(\"text\")\n\
+			.attr(\"text-anchor\", \"middle\")  // this makes it easy to centre the text as the transform is applied to the anchor\n\
+			.attr(\"transform\", \"translate(\"+-60+ \",\"+(h/2)+\")rotate(-90)\")  // text is drawn off the screen top left, move down and out and rotate\n\
+			.text(\""+ylabel+"\");\n\
+			graph"+id+".append(\"text\")\n\
+			.attr(\"text-anchor\", \"middle\")  // this makes it easy to centre the text as the transform is applied to the anchor\n\
+			.attr(\"transform\", \"translate(\"+ (w/2) +\",\"+(h+(40))+\")\")  // centre below axis\n\
+			.text(\"Packet No.\");\n\
+	</script>";
+
+        return result;
+}
+
 string fmnc_parser::get_filename()
 {
         return mfilename;
